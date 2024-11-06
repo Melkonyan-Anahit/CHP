@@ -74,11 +74,5 @@ int main() {
     cout << "Decoded Text (Caesar cipher): " << decodedText << endl;
 
 
-    if (decodedText == text) {
-        cout << "Success! The final decoded text matches the original text." << endl;
-    } else {
-        cout << "The final decoded text does not match the original text." << endl;
-    }
-
     return 0;
 }
