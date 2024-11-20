@@ -1,0 +1,117 @@
+#include <iostream>
+#include <queue>
+#include <vector>
+#include <unordered_map>
+#include <string>
+
+using namespace std;
+
+struct Node {
+    char ch; 
+    int freq;
+    Node *left, *right;
+
+    Node(char c, int f) : ch(c), freq(f), left(nullptr), right(nullptr) {}
+};
+
+struct compare {
+    bool operator()(Node* left, Node* right) {
+        return left->freq > right->freq;
+    }
+};
+
+Node* buildHuffmanTree(const string &text) {
+    unordered_map<char, int> freqMap;
+    for (char c : text) {
+        freqMap[c]++;
+    }
+
+    priority_queue<Node*, vector<Node*>, compare> minHeap;
+
+    for (auto entry : freqMap) {
+        minHeap.push(new Node(entry.first, entry.second));
+    }
+
+    while (minHeap.size() > 1) {
+        Node *left = minHeap.top(); minHeap.pop();
+        Node *right = minHeap.top(); minHeap.pop();
+
+        Node *newNode = new Node('\0', left->freq + right->freq);
+        newNode->left = left;
+        newNode->right = right;
+
+        minHeap.push(newNode);
+    }
+
+    return minHeap.top();
+}
+
+void generateHuffmanCodes(Node* root, const string &str, unordered_map<char, string> &huffmanCodes) {
+    if (root == nullptr) {
+        return;
+    }
+
+    if (root->ch != '\0') {
+        huffmanCodes[root->ch] = str;
+    }
+
+    generateHuffmanCodes(root->left, str + "0", huffmanCodes);
+    generateHuffmanCodes(root->right, str + "1", huffmanCodes);
+}
+
+void printHuffmanCodes(const unordered_map<char, string> &huffmanCodes) {
+    for (auto entry : huffmanCodes) {
+        cout << entry.first << ": " << entry.second << endl;
+    }
+}
+
+string encodeText(const string &text, const unordered_map<char, string> &huffmanCodes) {
+    string encodedText = "";
+    for (char c : text) {
+        encodedText += huffmanCodes.at(c);
+    }
+    return encodedText;
+}
+
+string decodeText(Node* root, const string &encodedText) {
+    string decodedText = "";
+    Node* currentNode = root;
+
+    for (char bit : encodedText) {
+        if (bit == '0') {
+            currentNode = currentNode->left; 
+        } else {
+            currentNode = currentNode->right; 
+        }
+
+        if (currentNode->left == nullptr && currentNode->right == nullptr) {
+            decodedText += currentNode->ch;
+            currentNode = root;
+        }
+    }
+
+    return decodedText;
+}
+
+int main() {
+ 
+    string text;
+    cout << "Enter the text to encode: ";
+    getline(cin, text);
+
+    Node* root = buildHuffmanTree(text);
+
+    unordered_map<char, string> huffmanCodes;
+    generateHuffmanCodes(root, "", huffmanCodes);
+
+    cout << "\nHuffman Codes for characters in the text:" << endl;
+    printHuffmanCodes(huffmanCodes);
+
+    string encodedText = encodeText(text, huffmanCodes);
+    cout << "\nEncoded text: " << encodedText << endl;
+
+    string decodedText = decodeText(root, encodedText);
+    cout << "\nDecoded text: " << decodedText << endl;
+
+    return 0;
+}
